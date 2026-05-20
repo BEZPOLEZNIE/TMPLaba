@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ClientLab/ClientLab.csproj" />
+  <Project Path="ServerLab/ServerLab.csproj" />
+</Solution>
