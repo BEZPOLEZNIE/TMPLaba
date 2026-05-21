@@ -46,8 +46,6 @@
             ColumnRam = new DataGridViewTextBoxColumn();
             ColumnStatus = new DataGridViewTextBoxColumn();
             label4 = new Label();
-            CompTimer = new System.Windows.Forms.Timer(components);
-            EventTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)dataGridEvents).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridComp).BeginInit();
             SuspendLayout();
@@ -198,17 +196,6 @@
             label4.TabIndex = 9;
             label4.Text = "Мониторинг компьютеров в Doofenshmirtz Evil Inc.";
             // 
-            // CompTimer
-            // 
-            CompTimer.Enabled = true;
-            CompTimer.Interval = 2000;
-            CompTimer.Tick += CompTimer_Tick;
-            // 
-            // EventTimer
-            // 
-            EventTimer.Interval = 5000;
-            EventTimer.Tick += EventTimer_Tick;
-            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -251,10 +238,8 @@
         private DataGridViewTextBoxColumn ColumnCpu;
         private DataGridViewTextBoxColumn ColumnRam;
         private DataGridViewTextBoxColumn ColumnStatus;
-        private System.Windows.Forms.Timer CompTimer;
         private DataGridViewTextBoxColumn ColumnTime;
         private DataGridViewTextBoxColumn ColumnDevice;
         private DataGridViewTextBoxColumn ColumnEvent;
-        private System.Windows.Forms.Timer EventTimer;
     }
 }

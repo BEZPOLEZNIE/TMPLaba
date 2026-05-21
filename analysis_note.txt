@@ -1,0 +1,1 @@
+Debugger said socket was null; exception NullReference at Serializer.SendString line socket.Send(length). Need to inspect ClientLab/Serializer.cs and LoginForm and MainForm constructors to see how socket passed and if null.
