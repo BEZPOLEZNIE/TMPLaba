@@ -86,37 +86,44 @@ namespace ServerLab
         {
             try
             {
-                string login = Serializer.ReceiveString(officersSocket);
+                JSer auth = Serializer.ReceiveObject(officersSocket);
+
+                string login = auth.Login;
                 Console.WriteLine($"Получен логин: {login} в {DateTime.Now}");
 
-                string password = Serializer.ReceiveString(officersSocket);
+                string password = auth.Password;
                 Console.WriteLine($"Получен пароль: {password} в {DateTime.Now}");
 
-                string answer;
+                JSer answer = new JSer();
 
                 if (accounts.ContainsKey(login) && accounts[login] == password)
                 {
-                    answer = "OK";
+                    answer.Text = "OK";
                     Console.WriteLine("Успешная авторизация!");
                 }
                 else
                 {
-                    answer = "ERR";
+                    answer.Text = "ERR";
                     Console.WriteLine("Неверный логин или пароль. Доступ запрещен.");
                 }
 
-                Serializer.SendString(officersSocket, answer);
+                Serializer.SendObject(officersSocket, answer);
                 while (true)
                 { 
-                    string message = Serializer.ReceiveString(officersSocket);
-                    string[] parts = message.Split('|');
+                    JSer message = Serializer.ReceiveObject(officersSocket);
 
-                    if (parts[0] == "CHAT")
+                    if (message.Type == "CHAT")
                     {
-                        string login_chat = parts[1];
-                        string text = parts[2];
+                        string login_chat = message.Login;
+                        string text = message.Password;
 
-                        string fullMessage = $"CHAT|{DateTime.Now:HH:mm:ss}|{login}|{text}";
+                        JSer fullMessage = new JSer
+                        {
+                            Type = "CHAT",
+                            Time = DateTime.Now.ToString("HH:mm:ss"),
+                            Login = login,
+                            Text = message.Text
+                        };
                         
                         lock (locker)
                         {
@@ -124,7 +131,7 @@ namespace ServerLab
                             {
                                 try
                                 {
-                                    Serializer.SendString(officer, fullMessage);
+                                    Serializer.SendObject(officer, fullMessage);
 
                                 }
                                 catch (Exception ex)
@@ -147,7 +154,6 @@ namespace ServerLab
                     officers.Remove(officersSocket);
                 }
                 officersSocket.Close();
-                Console.WriteLine("{login} отключен.");
             }
         }
 
@@ -158,13 +164,20 @@ namespace ServerLab
                 string time = DateTime.Now.ToString("HH:mm:ss");
                 string device = devices[random.Next(devices.Length)];
                 string ev = events[random.Next(events.Length)];
-                string message = $"EVENT|{time}|{device}|{ev}";
+
+                JSer message = new JSer
+                {
+                    Type = "EVENT",
+                    Time = time,
+                    Device = device,
+                    Text = ev
+                };
 
                 foreach (Socket officer in officers)
                 {
                     try
                     {
-                        Serializer.SendString(officer, message);
+                        Serializer.SendObject(officer, message);
                     }
                     catch (Exception ex)
                     {
@@ -188,7 +201,15 @@ namespace ServerLab
                         int ram = random.Next(1, 100);
 
                         string stat = status[random.Next(status.Length)];
-                        string message = $"COMP|{device}|{cpu}|{ram}|{stat}";
+
+                        JSer message = new JSer
+                        {
+                            Type = "COMP",
+                            Device = device,
+                            Cpu = cpu,
+                            Ram = ram,
+                            Status = stat
+                        };
 
                         lock (locker)
                         {
@@ -196,7 +217,7 @@ namespace ServerLab
                             {
                                 try
                                 {
-                                    Serializer.SendString(officer, message);
+                                    Serializer.SendObject(officer, message);
                                 }
                                 catch (Exception ex)
                                 {

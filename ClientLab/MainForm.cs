@@ -49,9 +49,14 @@ namespace ClientLab
             if (string.IsNullOrWhiteSpace(msg))
                 return;
 
-            string message = $"CHAT|{LoginForm.login}|{msg}";
+            JSer message = new JSer()
+            {
+                Type = "CHAT",
+                Login = "LoginForm.login",
+                Text = msg
+            };
 
-            Serializer.SendString(officersSocket, message);
+            Serializer.SendObject(officersSocket, message);
 
             txtChat.Clear();
         }
@@ -62,14 +67,13 @@ namespace ClientLab
             {
                 try
                 {
-                    string message = Serializer.ReceiveString(officersSocket);
-                    string[] parts = message.Split('|');
+                    JSer message = Serializer.ReceiveObject(officersSocket);
 
-                    if (parts[0] == "EVENT")
+                    if (message.Type == "EVENT")
                     {
                         this.Invoke(new Action(() =>
                         {
-                            allEvents.Add(new string[] { parts[1], parts[2], parts[3] });
+                            allEvents.Add(new string[] { message.Time, message.Device, message.Text });
 
                             RefreshFilters();
                         }));
@@ -80,7 +84,7 @@ namespace ClientLab
                         }
                     }
 
-                    if (parts[0] == "COMP")
+                    if (message.Type == "COMP")
                     {
                         this.Invoke(new Action(() =>
                         {
@@ -88,11 +92,11 @@ namespace ClientLab
 
                             foreach (DataGridViewRow row in dataGridComp.Rows)
                             {
-                                if (row.Cells[0].Value != null && row.Cells[0].Value.ToString() == parts[1])
+                                if (row.Cells[0].Value != null && row.Cells[0].Value.ToString() == message.Device)
                                 {
-                                    row.Cells[1].Value = parts[2] + "%";
-                                    row.Cells[2].Value = parts[3] + "%";
-                                    row.Cells[3].Value = parts[4];
+                                    row.Cells[1].Value = message.Cpu + "%";
+                                    row.Cells[2].Value = message.Ram + "%";
+                                    row.Cells[3].Value = message.Status;
                                     found = true;
                                     break;
                                 }
@@ -100,16 +104,16 @@ namespace ClientLab
 
                             if (!found)
                             {
-                                dataGridComp.Rows.Add(parts[1], parts[2] + "%", parts[3] + "%", parts[4]);
+                                dataGridComp.Rows.Add(message.Device, message.Cpu + "%", message.Ram + "%", message.Status);
                             }
                         }));
                     }
 
-                    if (parts[0] == "CHAT")
+                    if (message.Type == "CHAT")
                     {
                         this.Invoke(new Action(() =>
                         {
-                            string msg = $"[{parts[1]}] ({parts[2]}): {parts[3]}";
+                            string msg = $"[{message.Time}] ({message.Login}): {message.Text}";
                             lbChat.Items.Add(msg);
                         }));
                     }

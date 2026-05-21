@@ -27,12 +27,17 @@ namespace ClientLab
                 login = txtLogin.Text;
                 string password = txtPassword.Text;
 
-                Serializer.SendString(officersSocket, login);
-                Serializer.SendString(officersSocket, password);
-                
-                string answer = Serializer.ReceiveString(officersSocket);
+                JSer auth = new JSer()
+                {
+                    Type = "auth",
+                    Login = login,
+                    Password = password
+                };
 
-            if (answer == "OK")
+                Serializer.SendObject(officersSocket, auth);
+                JSer answer = Serializer.ReceiveObject(officersSocket);
+
+                if (answer.Text == "OK")
             {
                 labelStatus.Text = "Авторизация успешна";
 
