@@ -1,0 +1,1 @@
+Need to open files: ClientLab\Serializer.cs and ClientLab\LoginForm.cs and ClientLab\MainForm.cs to analyze. Requesting file contents.

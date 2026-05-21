@@ -1,71 +1,57 @@
 using System.Net.Sockets;
 using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
 
 namespace ClientLab
 {
     public partial class LoginForm : Form
     {
-        private TcpClient client;
-        private NetworkStream stream;
-
+        public static string login;
         public LoginForm()
         {
             InitializeComponent();
         }
 
-        public async void btnConnect_Click(object sender, EventArgs e)
+        private Socket officersSocket;
+        private void btnConnect_Click(object sender, EventArgs e)
         {
             try
             {
                 labelStatus.Text = "Подключение...";
 
-                client = new TcpClient();
+                officersSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                officersSocket.Connect(IPAddress.Parse("127.0.0.1"), 1488);
 
-                await client.ConnectAsync("127.0.0.1", 5000);
-
-                stream = client.GetStream();
-
-                string login = txtLogin.Text;
+                login = txtLogin.Text;
                 string password = txtPassword.Text;
 
-                string message = $"LOGIN|{login}|{password}";
+                Serializer.SendString(officersSocket, login);
+                Serializer.SendString(officersSocket, password);
+                
+                string answer = Serializer.ReceiveString(officersSocket);
 
-                byte[] data = Encoding.UTF8.GetBytes(message);
+            if (answer == "OK")
+            {
+                labelStatus.Text = "Авторизация успешна";
 
-                await stream.WriteAsync(data);
+                MainForm mainForm = new MainForm(officersSocket);
+                mainForm.Show();
+                this.Hide();
+            }
+            else
+            {
+                labelStatus.Text = "Ошибка авторизации";
 
-                byte[] responseBuffer = new byte[1024];
-
-                int responseBytes = await stream.ReadAsync(responseBuffer);
-
-                string response = Encoding.UTF8.GetString(
-                    responseBuffer,
-                    0,
-                    responseBytes
-                );
-
-                if (response == "OK")
-                {
-                    labelStatus.Text = "Авторизация успешна";
-
-                    MainForm mainForm = new MainForm(login);
-
-                    mainForm.Show();
-
-                    this.Hide();
-                }
-                else
-                {
-                    labelStatus.Text = "Ошибка авторизации";
-
-                    MessageBox.Show("Неверный логин или пароль");
-                }
+                MessageBox.Show("Неверный логин или пароль");
+            }
 
 
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                Console.WriteLine($"Ошибка: {ex.Message}");
 
                 labelStatus.Text = "Ошибка подключения";
             }

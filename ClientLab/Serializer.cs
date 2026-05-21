@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 
-namespace ServerLab
+namespace ClientLab
 {
     public static class Serializer
     {
